@@ -15,6 +15,7 @@ import (
 
 var argBatchPath = flag.String("b", "", "[batch mode] Folder path for convert (all XLSX files are converted to CSV with same names by default)")
 var argBatchPathFilenameMask = flag.String("bmask", "*/*.csv", "[batch mode] Output batch path mask like '*/converted/raw-*-out.csv')")
+var argBatchThreads = flag.Int("bthreads", "1", "[batch mode] how many asynchronous workers should run, 0 for auto=numcpu")
 var argXlsxPath = flag.String("f", "", "[single file mode] Path to input XLSX file")
 var argCsvPath = flag.String("o", "", "[single file mode] Path to output CSV file (otherwise stdout)")
 var argSheetIndex = flag.Int("i", -1, "[single file mode] Index of sheet to convert, zero based, -1=currently selected")
@@ -32,7 +33,11 @@ func main() {
 			return
 		}
 	} else if len(*argBatchPath) > 0 {
-		err := batchXlsx2csv(*argBatchPath, *argBatchPathFilenameMask, delimiterRune, runtime.NumCPU()+2, *argFormatRaw, *argFormatNoScientific)
+		workerCount := *argBatchThreads
+		if workerCount < 1 {
+			workerCount = runtime.NumCPU() + 1
+		}
+		err := batchXlsx2csv(*argBatchPath, *argBatchPathFilenameMask, delimiterRune, workerCount, *argFormatRaw, *argFormatNoScientific)
 		if err != nil {
 			fmt.Println(err.Error())
 			return
