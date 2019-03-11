@@ -14,8 +14,6 @@ import (
 	"time"
 )
 
-// @todo: gen tests
-
 type TRunParameters struct {
 	XLSXPath              *string
 	CSVPath               *string
@@ -27,21 +25,21 @@ type TRunParameters struct {
 	FormatRaw             *bool
 	FormatAllowExpFmt     *bool
 	FormatDateFixed       *string
+	AddBOMUTF8            *bool
 }
 
-var runParameters = &TRunParameters{}
-
-func init() {
-	runParameters.XLSXPath = flag.String("xlsx", "", "[single file mode] Path to input XLSX file")
-	runParameters.CSVPath = flag.String("csv", "", "[single file mode] Path to output CSV file (stdout of empty)")
-	runParameters.BatchPath = flag.String("batch", "", "[batch mode] Folder path for convert (all XLSX files are converted to CSV with same names by default)")
-	runParameters.BatchPathFilenameMask = flag.String("bmask", "*/*.csv", "[batch mode] Output batch path mask like '*/converted/raw-*-out.csv')")
-	runParameters.BatchThreads = flag.Int("bthreads", 1, "[batch mode] how many asynchronous workers should run, 0 for auto=numcpu")
-	runParameters.SheetIndex = flag.Int("sheet", -1, "Index of sheet to convert, zero based, -1=currently selected")
-	runParameters.Delimiter = flag.String("delimiter", ";", "CSV delimiter")
-	runParameters.FormatRaw = flag.Bool("fmtRaw", false, "Use real cell values instead of rendered with cell format")
-	runParameters.FormatAllowExpFmt = flag.Bool("fmtAllowExp", false, "render scientific formats (4,60561E+12) as raw strings (4605610000000)")
-	runParameters.FormatDateFixed = flag.String("fmtDateFixed", "", "Custom date format for any datetime cell")
+var runParameters = &TRunParameters{
+	XLSXPath:              flag.String("xlsx", "", "[single file mode] Path to input XLSX file"),
+	CSVPath:               flag.String("csv", "", "[single file mode] Path to output CSV file (stdout of empty)"),
+	BatchPath:             flag.String("batch", "", "[batch mode] Folder path for convert (all XLSX files are converted to CSV with same names by default)"),
+	BatchPathFilenameMask: flag.String("bmask", "*/*.csv", "[batch mode] Output batch path mask like '*/converted/raw-*-out.csv')"),
+	BatchThreads:          flag.Int("bthreads", 1, "[batch mode] how many asynchronous workers should run, 0 for auto=numcpu"),
+	SheetIndex:            flag.Int("sheet", -1, "Index of sheet to convert, zero based, -1=currently selected"),
+	Delimiter:             flag.String("delimiter", ";", "CSV delimiter"),
+	FormatRaw:             flag.Bool("fmtRaw", false, "Use real cell values instead of rendered with cell format"),
+	FormatAllowExpFmt:     flag.Bool("fmtAllowExp", false, "render scientific formats 4,60561E+12 as raw strings 4605610000000"),
+	FormatDateFixed:       flag.String("fmtDateFixed", "", "Custom date format for any datetime cell"),
+	AddBOMUTF8:            flag.Bool("addBomUtf8", false, "Start output stream/file/files with UTF-8 BOM = EF BB BF"),
 }
 
 func main() {
@@ -194,6 +192,12 @@ func xlsx2csv(runParameters *TRunParameters) error {
 	}
 	iteration := 0
 	for nil == scanner.Scan() {
+		if *runParameters.AddBOMUTF8 && iteration == 0 {
+			_, err = outputFile.Write([]byte{0xEF, 0xBB, 0xBF})
+			if nil != err {
+				return err
+			}
+		}
 		data := scanner.GetScanned()
 		err := csvWriter.Write(data)
 		if nil != err {
