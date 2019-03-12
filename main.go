@@ -1,5 +1,8 @@
 package main
 
+// @todo: arg help about setDateFixedFormat
+// @todo: add i18n arg
+
 import (
 	"encoding/csv"
 	"flag"
