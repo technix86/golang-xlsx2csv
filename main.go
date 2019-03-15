@@ -26,6 +26,7 @@ type TRunParameters struct {
 	BatchThreads           *int
 	Delimiter              *string
 	FormatRaw              *bool
+	FormatI18n             *string
 	FormatAllowExpFmt      *bool
 	FormatDecimalSeparator *string
 	FormatDateFixed        *string
@@ -42,6 +43,7 @@ var runParameters = &TRunParameters{
 	SheetIndex:             flag.Int("sheet", -1, "Index of sheet to convert, zero based, -1=currently selected"),
 	Delimiter:              flag.String("delimiter", ";", "CSV delimiter"),
 	FormatRaw:              flag.Bool("fmtRaw", false, "Use real cell values instead of rendered with cell format"),
+	FormatI18n:             flag.String("fmtI18n", "en", "Use specific I18n for builtin number formats"),
 	FormatAllowExpFmt:      flag.Bool("fmtAllowExp", false, "render scientific formats 4,60561E+12 as raw strings 4605610000000"),
 	FormatDecimalSeparator: flag.String("fmtDecimal", "", "Custom decimal separator for number formats"),
 	FormatDateFixed:        flag.String("fmtDateFixed", "", "Custom date format for any datetime cell"),
@@ -162,6 +164,7 @@ func xlsx2csv(runParameters *TRunParameters) error {
 	if err != nil {
 		return fmt.Errorf("cannot parse file [%s]: %s\n", *runParameters.XLSXPath, err.Error())
 	}
+	_ = xlsx.SetI18n(*runParameters.FormatI18n) // just try if possible
 	xlsx.Formatter().SetDateFixedFormat(*runParameters.FormatDateFixed)
 	xlsx.Formatter().SetDecimalSeparator(*runParameters.FormatDecimalSeparator)
 	if *runParameters.AutoTrim {
