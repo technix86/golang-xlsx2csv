@@ -18,37 +18,39 @@ import (
 )
 
 type TRunParameters struct {
-	XLSXPath               *string
-	CSVPath                *string
-	SheetIndex             *int
-	BatchPath              *string
-	BatchPathFilenameMask  *string
-	BatchThreads           *int
-	Delimiter              *string
-	FormatRaw              *bool
-	FormatI18n             *string
-	FormatAllowExpFmt      *bool
-	FormatDecimalSeparator *string
-	FormatDateFixed        *string
-	AddBOMUTF8             *bool
-	AutoTrim               *bool
+	XLSXPath                *string
+	CSVPath                 *string
+	SheetIndex              *int
+	BatchPath               *string
+	BatchPathFilenameMask   *string
+	BatchThreads            *int
+	Delimiter               *string
+	FormatRaw               *bool
+	FormatI18n              *string
+	FormatAllowExpFmt       *bool
+	FormatDecimalSeparator  *string
+	FormatThousandSeparator *string
+	FormatDateFixed         *string
+	AddBOMUTF8              *bool
+	AutoTrim                *bool
 }
 
 var runParameters = &TRunParameters{
-	XLSXPath:               flag.String("xlsx", "", "[single file mode] Path to input XLSX file"),
-	CSVPath:                flag.String("csv", "", "[single file mode] Path to output CSV file (stdout of empty)"),
-	BatchPath:              flag.String("batch", "", "[batch mode] Folder path for convert (all XLSX files are converted to CSV with same names by default)"),
-	BatchPathFilenameMask:  flag.String("batchMask", "*/*.csv", "[batch mode] Output batch path mask like '*/converted/raw-*-out.csv')"),
-	BatchThreads:           flag.Int("batchThreads", 1, "[batch mode] how many asynchronous workers should run, 0 for auto=numcpu"),
-	SheetIndex:             flag.Int("sheet", -1, "Index of sheet to convert, zero based, -1=currently selected"),
-	Delimiter:              flag.String("delimiter", ";", "CSV delimiter"),
-	FormatRaw:              flag.Bool("fmtRaw", false, "Use real cell values instead of rendered with cell format"),
-	FormatI18n:             flag.String("fmtI18n", "en", "Use specific I18n for builtin number formats"),
-	FormatAllowExpFmt:      flag.Bool("fmtAllowExp", false, "render scientific formats 4,60561E+12 as raw strings 4605610000000"),
-	FormatDecimalSeparator: flag.String("fmtDecimal", "", "Custom decimal separator for number formats"),
-	FormatDateFixed:        flag.String("fmtDateFixed", "", "Custom date format for any datetime cell"),
-	AddBOMUTF8:             flag.Bool("bom", false, "Start output stream/file/files with UTF-8 BOM = EF BB BF"),
-	AutoTrim:               flag.Bool("trim", false, "Trim whitespaces"),
+	XLSXPath:                flag.String("xlsx", "", "[single file mode] Path to input XLSX file"),
+	CSVPath:                 flag.String("csv", "", "[single file mode] Path to output CSV file (stdout of empty)"),
+	BatchPath:               flag.String("batch", "", "[batch mode] Folder path for convert (all XLSX files are converted to CSV with same names by default)"),
+	BatchPathFilenameMask:   flag.String("batchMask", "*/*.csv", "[batch mode] Output batch path mask like '*/converted/raw-*-out.csv')"),
+	BatchThreads:            flag.Int("batchThreads", 1, "[batch mode] how many asynchronous workers should run, 0 for auto=numcpu"),
+	SheetIndex:              flag.Int("sheet", -1, "Index of sheet to convert, zero based, -1=currently selected"),
+	Delimiter:               flag.String("delimiter", ";", "CSV delimiter"),
+	FormatRaw:               flag.Bool("fmtRaw", false, "Use real cell values instead of rendered with cell format"),
+	FormatI18n:              flag.String("fmtI18n", "en", "Use specific I18n for builtin number formats"),
+	FormatAllowExpFmt:       flag.Bool("fmtAllowExp", false, "render scientific formats 4,60561E+12 as raw strings 4605610000000"),
+	FormatDecimalSeparator:  flag.String("fmtDecimal", "", "Custom decimal separator for number formats"),
+	FormatThousandSeparator: flag.String("fmtThousand", "", "Custom thousand separator for number formats"),
+	FormatDateFixed:         flag.String("fmtDateFixed", "", "Custom date format for any datetime cell"),
+	AddBOMUTF8:              flag.Bool("bom", false, "Start output stream/file/files with UTF-8 BOM = EF BB BF"),
+	AutoTrim:                flag.Bool("trim", false, "Trim whitespaces"),
 }
 
 func main() {
