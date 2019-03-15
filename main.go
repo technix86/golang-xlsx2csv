@@ -168,6 +168,7 @@ func xlsx2csv(runParameters *TRunParameters) error {
 	}
 	_ = xlsx.SetI18n(*runParameters.FormatI18n) // just try if possible
 	xlsx.Formatter().SetDateFixedFormat(*runParameters.FormatDateFixed)
+	xlsx.Formatter().SetThousandSeparator(*runParameters.FormatThousandSeparator)
 	xlsx.Formatter().SetDecimalSeparator(*runParameters.FormatDecimalSeparator)
 	if *runParameters.AutoTrim {
 		xlsx.Formatter().SetTrimOn()
