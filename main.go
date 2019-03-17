@@ -35,6 +35,8 @@ type TRunParameters struct {
 	AutoTrim                *bool
 }
 
+const dummyThousandSeparator = "depends on i18n"
+
 var runParameters = &TRunParameters{
 	XLSXPath:                flag.String("xlsx", "", "[single file mode] Path to input XLSX file"),
 	CSVPath:                 flag.String("csv", "", "[single file mode] Path to output CSV file (stdout of empty)"),
@@ -47,7 +49,7 @@ var runParameters = &TRunParameters{
 	FormatI18n:              flag.String("fmtI18n", "en", "Use specific I18n for builtin number formats"),
 	FormatAllowExpFmt:       flag.Bool("fmtAllowExp", false, "render scientific formats 4,60561E+12 as raw strings 4605610000000"),
 	FormatDecimalSeparator:  flag.String("fmtDecimal", "", "Custom decimal separator for number formats"),
-	FormatThousandSeparator: flag.String("fmtThousand", "", "Custom thousand separator for number formats"),
+	FormatThousandSeparator: flag.String("fmtThousand", dummyThousandSeparator, "Custom thousand separator for number formats"),
 	FormatDateFixed:         flag.String("fmtDateFixed", "", "Custom date format for any datetime cell"),
 	AddBOMUTF8:              flag.Bool("bom", false, "Start output stream/file/files with UTF-8 BOM = EF BB BF"),
 	AutoTrim:                flag.Bool("trim", false, "Trim whitespaces"),
@@ -168,7 +170,9 @@ func xlsx2csv(runParameters *TRunParameters) error {
 	}
 	_ = xlsx.SetI18n(*runParameters.FormatI18n) // just try if possible
 	xlsx.Formatter().SetDateFixedFormat(*runParameters.FormatDateFixed)
-	xlsx.Formatter().SetThousandSeparator(*runParameters.FormatThousandSeparator)
+	if *runParameters.FormatThousandSeparator != dummyThousandSeparator {
+		xlsx.Formatter().SetThousandSeparator(*runParameters.FormatThousandSeparator)
+	}
 	xlsx.Formatter().SetDecimalSeparator(*runParameters.FormatDecimalSeparator)
 	if *runParameters.AutoTrim {
 		xlsx.Formatter().SetTrimOn()
