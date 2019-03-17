@@ -60,8 +60,7 @@ func main() {
 	if len(*runParameters.XLSXPath) > 0 {
 		err := xlsx2csv(runParameters)
 		if err != nil {
-			errorFile := os.Stderr
-			_, _ = errorFile.Write([]byte(fmt.Sprintf("XLSX2CSV error: %s\n", err.Error())))
+			_, _ = os.Stderr.WriteString(fmt.Sprintf("XLSX2CSV error: %s\n", err.Error()))
 		}
 	} else if len(*runParameters.BatchPath) > 0 {
 		if *runParameters.BatchThreads < 1 {
@@ -143,8 +142,7 @@ func batchXlsx2csv(runParameters *TRunParameters) error {
 				fmt.Printf("START[%d] %s\n", workerId, fileSrcName)
 				err := xlsx2csv(&runThreadParameters)
 				if nil != err {
-					errorFile := os.Stderr
-					_, _ = errorFile.Write([]byte(fmt.Sprintf("  ERR[%d] %s: %s\n", workerId, fileSrcName, err.Error())))
+					_, _ = os.Stderr.WriteString(fmt.Sprintf("  ERR[%d] %s: %s\n", workerId, fileSrcName, err.Error()))
 				}
 				fmt.Printf("END  [%d] %s\n", workerId, fileDstName)
 				reports <- 0
