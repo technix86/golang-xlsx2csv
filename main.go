@@ -38,19 +38,19 @@ type TRunParameters struct {
 const dummyThousandSeparator = "depends on i18n"
 
 var runParameters = &TRunParameters{
-	XLSXPath:                flag.String("xlsx", "", "[single file mode] Path to input XLSX file"),
+	XLSXPath:                flag.String("xlsx", "", "[single file mode] Path to input XLSX/XLS file"),
 	CSVPath:                 flag.String("csv", "", "[single file mode] Path to output CSV file (stdout of empty)"),
-	BatchPath:               flag.String("batch", "", "[batch mode] Folder path for convert (all XLSX files are converted to CSV with same names by default)"),
+	BatchPath:               flag.String("batch", "", "[batch mode] Folder path for convert (all .xlsx/.xls files are converted to CSV with same names by default)"),
 	BatchPathFilenameMask:   flag.String("batchMask", "*/*.csv", "[batch mode] Output batch path mask like '*/converted/raw-*-out.csv')"),
 	BatchThreads:            flag.Int("batchThreads", 1, "[batch mode] how many asynchronous workers should run, 0 for auto=numcpu"),
 	SheetIndex:              flag.Int("sheet", -1, "Index of sheet to convert, zero based, -1=currently selected"),
 	Delimiter:               flag.String("delimiter", ";", "CSV delimiter"),
-	FormatRaw:               flag.Bool("fmtRaw", false, "Use real cell values instead of rendered with cell format"),
-	FormatI18n:              flag.String("fmtI18n", "en", "Use specific I18n for builtin number formats"),
-	FormatAllowExpFmt:       flag.Bool("fmtAllowExp", false, "render scientific formats 4,60561E+12 as raw strings 4605610000000"),
-	FormatDecimalSeparator:  flag.String("fmtDecimal", "", "Custom decimal separator for number formats"),
-	FormatThousandSeparator: flag.String("fmtThousand", dummyThousandSeparator, "Custom thousand separator for number formats"),
-	FormatDateFixed:         flag.String("fmtDateFixed", "", "Custom date format for any datetime cell"),
+	FormatRaw:               flag.Bool("fmtRaw", false, "[XLSX only] Use real cell values instead of rendered with cell format"),
+	FormatI18n:              flag.String("fmtI18n", "en", "[XLSX only] Use specific I18n for builtin number formats"),
+	FormatAllowExpFmt:       flag.Bool("fmtAllowExp", false, "[XLSX only] Render scientific formats 4,60561E+12 as raw strings 4605610000000"),
+	FormatDecimalSeparator:  flag.String("fmtDecimal", "", "[XLSX only] Custom decimal separator for number formats"),
+	FormatThousandSeparator: flag.String("fmtThousand", dummyThousandSeparator, "[XLSX only] Custom thousand separator for number formats"),
+	FormatDateFixed:         flag.String("fmtDateFixed", "", "[XLSX only] Custom date format for any datetime cell"),
 	AddBOMUTF8:              flag.Bool("bom", false, "Start output stream/file/files with UTF-8 BOM = EF BB BF"),
 	AutoTrim:                flag.Bool("trim", false, "Trim whitespaces"),
 }
@@ -60,7 +60,7 @@ func main() {
 	if len(*runParameters.XLSXPath) > 0 {
 		err := xlsx2csv(runParameters)
 		if err != nil {
-			_, _ = os.Stderr.WriteString(fmt.Sprintf("XLSX2CSV error: %s\n", err.Error()))
+			_, _ = os.Stderr.WriteString(fmt.Sprintf("main.XLSX2CSV() error: %s\n", err.Error()))
 		}
 	} else if len(*runParameters.BatchPath) > 0 {
 		if *runParameters.BatchThreads < 1 {
@@ -114,9 +114,12 @@ func batchXlsx2csv(runParameters *TRunParameters) error {
 	}
 	files := make([]fileSortInfo, 0) // file=>filesize
 	for _, fileInner := range dirContents {
+		if fileInner.IsDir() {
+			continue
+		}
 		fileSrc := file.Name() + string(os.PathSeparator) + fileInner.Name()
 		ext := filepath.Ext(fileSrc)
-		if !fileInner.IsDir() && strings.ToLower(ext) == ".xlsx" {
+		if strings.ToLower(ext) == ".xlsx" || strings.ToLower(ext) == ".xls" {
 			files = append(files, fileSortInfo{name: fileSrc, size: fileInner.Size()})
 		}
 	}
@@ -162,7 +165,8 @@ func batchXlsx2csv(runParameters *TRunParameters) error {
 
 func xlsx2csv(runParameters *TRunParameters) error {
 	var scanner tablescanner.ITableDocumentScanner
-	err, xlsx := tablescanner.NewXLSXStream(*runParameters.XLSXPath)
+	err, xlsx := tablescanner.NewTableStream(*runParameters.XLSXPath)
+
 	if err != nil {
 		return fmt.Errorf("cannot parse file [%s]: %s\n", *runParameters.XLSXPath, err.Error())
 	}
